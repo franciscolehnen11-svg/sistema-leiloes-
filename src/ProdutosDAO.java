@@ -79,6 +79,62 @@ public class ProdutosDAO {
         return listagem;
     }
     
+    public boolean venderProduto(int id){
+        
+        String sql = "UPDATE produtos SET status = ? WHERE id = ?";
+        
+        conn = new conectaDAO().connectDB();
+        if (conn == null) {
+            return false;
+        }
+        
+        try {
+            prep = conn.prepareStatement(sql);
+            prep.setString(1, "Vendido");
+            prep.setInt(2, id);
+            int linhasAlteradas = prep.executeUpdate();
+            return linhasAlteradas > 0;
+        } catch (SQLException erro) {
+            System.out.println("Erro ao vender produto: " + erro.getMessage());
+            return false;
+        } finally {
+            fecharRecursos();
+        }
+        
+    }
+    
+    public ArrayList<ProdutosDTO> listarProdutosVendidos(){
+        
+        String sql = "SELECT id, nome, valor, status FROM produtos WHERE status = ?";
+        ArrayList<ProdutosDTO> vendidos = new ArrayList<>();
+        
+        conn = new conectaDAO().connectDB();
+        if (conn == null) {
+            return vendidos;
+        }
+        
+        try {
+            prep = conn.prepareStatement(sql);
+            prep.setString(1, "Vendido");
+            resultset = prep.executeQuery();
+            
+            while (resultset.next()) {
+                ProdutosDTO produto = new ProdutosDTO();
+                produto.setId(resultset.getInt("id"));
+                produto.setNome(resultset.getString("nome"));
+                produto.setValor(resultset.getInt("valor"));
+                produto.setStatus(resultset.getString("status"));
+                vendidos.add(produto);
+            }
+        } catch (SQLException erro) {
+            System.out.println("Erro ao listar produtos vendidos: " + erro.getMessage());
+        } finally {
+            fecharRecursos();
+        }
+        
+        return vendidos;
+    }
+    
     private void fecharRecursos() {
         try {
             if (resultset != null) {
